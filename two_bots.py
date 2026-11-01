@@ -5,7 +5,6 @@ from chatbot import SupportChatbot
 from order_tool import OrderLookup
 from stock_tool import StockLookup
 
-
 ORDERS = {
     "A100": "shipped",
     "A101": "processing",

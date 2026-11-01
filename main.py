@@ -33,4 +33,4 @@ while user_message != "quit":
     print(f"{bot.name}: {bot.respond(user_message)}")
     user_message = input(f"{user_name}: ")
 
-print(f"Messages in this conversation: {len(bot.history)}")
+print(f"Messages in this conversation: {len(bot.history) + 2}")
