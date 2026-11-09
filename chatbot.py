@@ -7,12 +7,15 @@ HANDOFF_WORDS = ["address", "payment", "card"]
 class SupportChatbot:
     """A mock support chatbot that knows about chatting. It knows nothing about orders."""
 
-    def __init__(self, name: str, instructions: str, order_tool, stock_tool) -> None:
+    def __init__(
+        self, name: str, instructions: str, order_tool, stock_tool, model
+    ) -> None:
         """Set up one chatbot with its own name, instructions, tool, and history."""
         self.name = name
         self.instructions = instructions
         self.order_tool = order_tool
         self.stock_tool = stock_tool
+        self.model = model
         self.history = []
 
     def respond(self, user_message: str) -> str:
@@ -31,9 +34,14 @@ class SupportChatbot:
             return self.order_reply(user_message)
         if "stock" in text:
             return self.stock_reply(user_message)
-        if "hello" in text:
-            return f"Hello! I'm {self.name}. I can check an order status for you."
-        return "I'm not sure how to help with that. I can check an order status."
+        return self.model_reply()
+
+    def model_reply(self) -> str:
+        """Ask the model for a reply. Give a safe answer if the model has none."""
+        reply = self.model.reply(self.instructions, self.history)
+        if reply is None:
+            return "Sorry, I can't answer that right now. Please try again in a moment."
+        return reply
 
     def needs_human(self, text: str) -> bool:
         """Return True if the message is about something a person must handle."""

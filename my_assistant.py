@@ -21,10 +21,11 @@ MONTHS = {
 class AssignmentBot:
     """Mock chatbot that helps with deadlines."""
 
-    def __init__(self, name: str, instructions: str, assignment_tool) -> None:
+    def __init__(self, name: str, instructions: str, assignment_tool, model) -> None:
         self.name = name
         self.instructions = instructions
         self.assignment_tool = assignment_tool
+        self.model = model
         self.history = []
 
     def respond(self, user_message: str) -> str:
@@ -40,9 +41,14 @@ class AssignmentBot:
             return "Sorry, I cannot help you with that. I am handing you off to your advisor."
         if "deadline" in text.lower() or "due" in text.lower():
             return self.reply_deadline(text)
-        if "hello" in text.lower():
-            return f"Hello! I'm {self.name}. I can check your deadlines for you."
-        return "I'm not sure I can help with that. Try asking me about a deadline!"
+        return self.model_reply()
+
+    def model_reply(self) -> str:
+        """Ask the model for a reply. Give a safe answer if the model has none."""
+        reply = self.model.reply(self.instructions, self.history)
+        if reply is None:
+            return "Sorry, I can't answer that right now. Please try again in a moment."
+        return reply
 
     def needs_advisor(self, text: str) -> bool:
         """Returns True if the request requires an advisor."""

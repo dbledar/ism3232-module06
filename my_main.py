@@ -3,15 +3,22 @@
 
 from my_assistant import AssignmentBot
 from my_tool import AssignmentTool
+from ollama_model import OllamaModel
 
 ASSIGNMENTS = {
     "HW11": "11-13-2026",
     "LAB02": "11-13-2026",
     "EXAM01": "12-03-2026",
 }
+INSTRUCTIONS = """You are Delilah, a frank and polite assistant for students.
+You will answer questions about assignments and their due dates.
+If you do not know the answer, say you do not know and offer to pass the student to their advisor.
+Only state facts that appear in these instructions."""
+
 
 assignment_tool = AssignmentTool(ASSIGNMENTS)
-bot = AssignmentBot("Delilah", "You are frank and polite.", assignment_tool)
+model = OllamaModel()
+bot = AssignmentBot("Delilah", INSTRUCTIONS, assignment_tool, model)
 
 user_name = input(f"{bot.name}: Hello, what is your name?\nYou: ")
 print(

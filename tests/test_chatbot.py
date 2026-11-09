@@ -1,6 +1,15 @@
 from chatbot import SupportChatbot
+from echo_model import EchoModel
+from mock_model import MockModel
 from order_tool import OrderLookup
 from stock_tool import StockLookup
+
+
+class SilentModel:
+    """A model that never has an answer. It stands in for Ollama being switched off."""
+
+    def reply(self, instructions, history):
+        return None
 
 
 def make_bot() -> SupportChatbot:
@@ -8,7 +17,16 @@ def make_bot() -> SupportChatbot:
     orders = {"A100": "shipped", "A101": "processing"}
     stock = {"rain jacket": 12, "day pack": 0}
     return SupportChatbot(
-        "Sunny", "Be friendly.", OrderLookup(orders), StockLookup(stock)
+        "Sunny", "Be friendly.", OrderLookup(orders), StockLookup(stock), MockModel()
+    )
+
+
+def make_bot_with_silent_mode() -> SupportChatbot:
+    """Build a chatbot whose model never answers."""
+    orders = {"A100": "shipped", "A101": "processing"}
+    stock = {"rain jacket": 12, "day pack": 0}
+    return SupportChatbot(
+        "Sunny", "Be friendly.", OrderLookup(orders), StockLookup(stock), SilentModel()
     )
 
 
@@ -75,3 +93,30 @@ def test_count_user_messages() -> None:
     bot.respond("weather")
     bot.respond("order")
     assert bot.count_user_messages() == 3
+
+
+def test_other_messages_go_to_the_model() -> None:
+    bot = make_bot()
+    assert bot.respond("Hello") == "Hello! How can I help you today?"
+
+
+def test_safe_reply_when_the_model_has_no_answer() -> None:
+    bot = make_bot_with_silent_mode()
+    assert "try again" in bot.respond("Hello")
+
+
+def test_order_rules_does_not_need_the_model() -> None:
+    bot = make_bot_with_silent_mode()
+    assert "shipped" in bot.respond("Where is order A100?")
+
+
+def test_handoff_rule_does_not_need_the_model() -> None:
+    bot = make_bot_with_silent_mode()
+    assert "human" in bot.respond("Please change my shipping address")
+
+
+def test_chatbot_works_with_any_model_that_has_a_reply_method() -> None:
+    order_tool = OrderLookup({"A100": "shipped"})
+    stock_tool = StockLookup({"rain jacket": 12})
+    bot = SupportChatbot("Sunny", "Be friendly.", order_tool, stock_tool, EchoModel())
+    assert bot.respond("good morning") == "You said: good morning"

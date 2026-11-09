@@ -1,11 +1,13 @@
 from my_assistant import AssignmentBot
+from my_mock_model import MockModel
 from my_tool import AssignmentTool
 
 
 def make_bot() -> AssignmentBot:
     """Build a fresh chatbot for testing."""
     assignments = {"HW01": "01-01-2000", "LAB02": "02-02-2001", "EXAM03": "03-12-2002"}
-    return AssignmentBot("George", "Be succinct", AssignmentTool(assignments))
+    model = MockModel()
+    return AssignmentBot("George", "Be succinct", AssignmentTool(assignments), model)
 
 
 def test_tool_finds_deadline() -> None:
